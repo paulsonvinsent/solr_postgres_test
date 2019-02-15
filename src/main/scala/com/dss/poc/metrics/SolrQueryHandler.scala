@@ -42,6 +42,15 @@ object SolrQueryHandler {
   val client: SolrClient = new CloudSolrClient.Builder(list, Optional.empty[String]).withSocketTimeout(30000).withConnectionTimeout(15000).build()
 
 
+  def getQuery(name: String): QueryAndPostProcessing = {
+    name match {
+      case "asset_distribution_by_tag" => makeAssetDistributionByTagQuery
+      case "sensitive_data_access" => makeSensitiveDataAccessQuery
+      case "access_per_days" => accessPerDays
+    }
+  }
+
+
   def makeAssetDistributionByTagQuery: QueryAndPostProcessing = {
 
     val querypre = new SolrQuery
@@ -57,7 +66,7 @@ object SolrQueryHandler {
     query.set("facet.pivot", "tags")
     query.set("rows", 0)
     query.setFacetLimit(10)
-    MultiQuery("asset_distribution_by_tag_solr",
+    MultiQuery("asset_distribution_by_tag",
       List(
         SolrQueryAndPostProcessing("", "assets", client, query, x => Unit),
         SolrQueryAndPostProcessing("", "assets", client, querypre, x => Unit)
@@ -75,13 +84,13 @@ object SolrQueryHandler {
     query.setFacet(true)
     query.set("facet.pivot", "{!stats=piv1}is_sensitive")
     query.set("rows", 0)
-    SolrQueryAndPostProcessing("sensitive_data_access_solr", "audit", client, query, x => {
+    SolrQueryAndPostProcessing("sensitive_data_access", "audit", client, query, x => {
 
     })
   }
 
 
-  def AccessPerDays: QueryAndPostProcessing = {
+  def accessPerDays: QueryAndPostProcessing = {
     val duet = TestParamGenerator.getDateRange
     val query = new SolrQuery
     query.setQuery(s"audit_date:{${duet._1} TO ${duet._2}}")
@@ -91,7 +100,7 @@ object SolrQueryHandler {
     query.setFacet(true)
     query.set("facet.pivot", "{!stats=piv1}audit_date")
     query.set("rows", 0)
-    SolrQueryAndPostProcessing("access_per_days_solr", "audit", client, query, x => {
+    SolrQueryAndPostProcessing("access_per_days", "audit", client, query, x => {
       Unit
     })
   }

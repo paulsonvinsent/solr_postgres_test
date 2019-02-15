@@ -16,6 +16,13 @@ case class PostgresAndQueryProcessing(id: String, client: postgresql.Client, req
 
 object PostgresQueryHandler {
 
+  def getQuery(name: String): QueryAndPostProcessing = {
+    name match {
+      case "asset_distribution_by_tag" => makeAssetDistributionByTagQuery
+      case "sensitive_data_access" => makeSensitiveDataAccessQuery
+      case "access_per_days" => accessPerDays
+    }
+  }
 
   val client: postgresql.Client = Postgresql.client
     .withUserAndPasswd("postgres", "")
@@ -30,7 +37,7 @@ object PostgresQueryHandler {
     val query = "select tag,count(distinct(tablename)) as " +
       "number_of_tables from sensitivity group " +
       "by tag order by number_of_tables limit 10;"
-    PostgresAndQueryProcessing("asset_distribution_by_tag_pg", client, Request(query))
+    PostgresAndQueryProcessing("asset_distribution_by_tag", client, Request(query))
 
   }
 
@@ -46,11 +53,11 @@ object PostgresQueryHandler {
       s"\n(select *  from audit where date>='${triplet._1}' and date<='${triplet._2}') " +
       "\nAS audit_filtered " +
       "\nON audit_filtered.tablename=sensitive_tables_in_collection.tablename;"
-    PostgresAndQueryProcessing("sensitive_data_access_pg", client, Request(query))
+    PostgresAndQueryProcessing("sensitive_data_access", client, Request(query))
   }
 
 
-  def AccessPerDays: QueryAndPostProcessing = {
+  def accessPerDays: QueryAndPostProcessing = {
     val range = TestParamGenerator.getDateRange
     val query = "select finaltable.date,sum(finaltable.allowed) as access " +
       "" +
@@ -64,7 +71,7 @@ object PostgresQueryHandler {
       "AS tableaccess ON tableaccess.tablename=sensitivity_tables.tablename\n  ) " +
       "AS finaltable group by finaltable.date order by access limit 10"
 
-    PostgresAndQueryProcessing("access_per_days_pg", client, Request(query))
+    PostgresAndQueryProcessing("access_per_days", client, Request(query))
   }
 
 }
