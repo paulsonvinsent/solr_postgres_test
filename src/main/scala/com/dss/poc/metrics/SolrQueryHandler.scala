@@ -16,7 +16,8 @@ trait QueryAndPostProcessing {
 case class SolrQueryAndPostProcessing(id: String, collection: String, client: SolrClient, query: SolrQuery, postProcessing: QueryResponse => Unit) extends QueryAndPostProcessing {
   override def process: (String, Long) = {
     val startTime = System.currentTimeMillis()
-    postProcessing(client.query(collection, query))
+    val response = client.query(collection, query)
+    postProcessing(response)
     val totalTime = System.currentTimeMillis() - startTime
     (id, totalTime)
   }
@@ -33,7 +34,7 @@ case class MultiQuery(id: String, queries: List[QueryAndPostProcessing]) extends
 
 object SolrQueryHandler {
 
-  val connectionString = "172.22.65.110:2181/solr"
+  val connectionString = "172.22.65.110:2181"
 
 
   val list = new util.ArrayList[String]()

@@ -8,7 +8,8 @@ import roc.{Postgresql, postgresql}
 case class PostgresAndQueryProcessing(id: String, client: postgresql.Client, request: Request, postProcessing: Result => Unit = _ => Unit) extends QueryAndPostProcessing {
   override def process: (String, Long) = {
     val startTime = System.currentTimeMillis()
-    postProcessing(Await.result(client.query(request)))
+    val result = Await.result(client.query(request))
+    postProcessing(result)
     val totalTime = System.currentTimeMillis() - startTime
     (id, totalTime)
   }
@@ -24,13 +25,13 @@ object PostgresQueryHandler {
     }
   }
 
-  val client: postgresql.Client = Postgresql.client
-    .withUserAndPasswd("postgres", "")
-    .withDatabase("database")
-    .newRichClient("inet!localhost:5432")
-
   val connectionString = "inet!172.22.65.107:5432"
   val database = "poc"
+
+  val client: postgresql.Client = Postgresql.client
+    .withUserAndPasswd("postgres", "")
+    .withDatabase(database)
+    .newRichClient(connectionString)
 
 
   def makeAssetDistributionByTagQuery: QueryAndPostProcessing = {
@@ -43,7 +44,7 @@ object PostgresQueryHandler {
 
   def makeSensitiveDataAccessQuery: QueryAndPostProcessing = {
     val triplet = TestParamGenerator.getDateRangeAndCollection
-    val query = "select sum(allowed),sum(denied) from\n" +
+    val query = "select sum(allowed) as allowed,sum(denied) as denied from\n" +
       "(select sensistive_tables.tablename as tablename from (\n" +
       s"(select tablename from collections where collection='${triplet._3}') " +
       "AS table_in_collection\nINNER JOIN " +
