@@ -47,7 +47,7 @@ object LoadJob extends App {
       println(s"Test:$testType,Source:Solr,iterations:$numberOfIterations")
       println(columns.mkString(","))
       println((List(avg) ::: percentiles).mkString(","))
-      SolrQueryHandler.client.close()
+
 
     case "pg" =>
       val percentilesToCalculate: List[Double] = List(25, 50, 75, 90, 100)
@@ -74,7 +74,7 @@ object LoadJob extends App {
       println(s"Test:$testType,Source:Postgres,iterations:$numberOfIterations")
       println(columns.mkString(","))
       println((List(avg) ::: percentiles).mkString(","))
-      PostgresQueryHandler.client.close()
+
   }
 
   def percentileCompute(latencies: List[Long], percentile: Double) = {
@@ -82,6 +82,9 @@ object LoadJob extends App {
     val Index = Math.ceil((percentile.toDouble / 100.toDouble) * sortedLatencies.size.toDouble).asInstanceOf[Int]
     sortedLatencies(Index - 1)
   }
+
+  SolrQueryHandler.client.close()
+  PostgresQueryHandler.client.close()
 
 
 }
