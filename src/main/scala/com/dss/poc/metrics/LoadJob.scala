@@ -1,4 +1,4 @@
-package com.dss.poc.models
+package com.dss.poc.metrics
 
 
 object LoadJob extends App {

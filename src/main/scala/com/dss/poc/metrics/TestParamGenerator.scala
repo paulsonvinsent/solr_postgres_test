@@ -1,4 +1,4 @@
-package com.dss.poc.models
+package com.dss.poc.metrics
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit.DAYS

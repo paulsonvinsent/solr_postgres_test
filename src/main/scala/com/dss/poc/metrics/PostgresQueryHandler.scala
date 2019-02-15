@@ -1,4 +1,4 @@
-package com.dss.poc.models
+package com.dss.poc.metrics
 
 import com.twitter.util.Await
 import roc.postgresql.{Request, Result}
